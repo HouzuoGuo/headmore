@@ -1,5 +1,5 @@
 all:
-	gcc -g -O3 -Wall -o headmore `pkg-config --cflags --libs libvncclient caca` vnc.c viewer.c main.c 
+	gcc -g -O3 -Wall -o headmore *.c -lpthread `pkg-config --cflags --libs caca libvncclient`
 
 clean:
 	rm headmore
