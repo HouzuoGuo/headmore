@@ -1,0 +1,114 @@
+.TH headmore 1 "" "headmore" "Virtual Network Computing"
+.SH NAME
+headmore \- VNC client for character terminals
+
+.SH SYNOPSIS
+.B headmore
+.RI host_or_ip:port_number
+
+.SH DESCRIPTION
+.B headmore
+is a client for Virtual Network Computing (VNC), it is designed for running in character terminals such as Linux VT, xterm, or any other terminal emulator.
+.B headmore
+is fully capable of directing keyboard input to VNC and control mouse cursor movements.
+
+.SH CONTROLS
+.B headmore
+offers comprehensive keyboard and mouse input controls. The back-tick key switches input between viewer/mouse control and VNC desktop.
+
+For QWERTY keyboard users, the left hand side controls are:
+
+.TP
+.B Escape
+Disconnect from VNC server and leave the viewer immediately.
+.
+.TP
+.B Back-tick (`)
+Switch keyboard input between viewer/mouse control and VNC desktop. When you have just connected, your keyboard input is directed at viewer/mouse control.
+.
+.TP
+.B Tilde (~)
+Type a back-tick in VNC desktop.
+.
+.TP
+.B W, A, S, D
+Pan viewer up, left, down, or right.
+.
+.TP
+.B Q, E
+Zoom out or in on the viewer.
+.
+
+.P
+And the right hand side controls are:
+
+.TP
+.B I, J, K, L
+Move mouse cursor up, left, down, or right. Cursor speed is determined by current zoom, it move slower when zoomed in.
+.
+.TP
+.B U, O
+Click left or right mouse button.
+.
+.TP
+.B 7, 8, 9
+Toggle hold left, middle, or right mouse button.
+.
+.TP
+.B 0
+Click middle mouse button.
+.
+.TP
+.B P
+Instantly zoom in on where mouse cursor currently is.
+.
+
+.P
+And finally these keys toggle hold modifier keys in VNC desktop:
+
+.TP
+.B Z, M
+Toggle hold left or right side Control key.
+.
+.TP
+.B X, N
+Toggle hold left or right side Shift key.
+.
+.TP
+.B C, B
+Toggle hold left or right side Alt key.
+.
+.TP
+.B V
+Toggle hold left Meta key (Mac/Windows key).
+.
+
+.SH INPUT QUIRKS
+
+While nearly all keyboard input will be successfully sent to VNC desktop, there are however several quirks to bear in mind:
+
+.IP \[bu]
+If you have a computer mouse and your terminal emulator somehow forwards mouse clicks to headmore, headmore may do random things or quit unexpectedly.
+.IP \[bu]
+All modifier keys only work with lower case letters a-z. For other combinations such as Alt+F4, toggle hold Alt key and then type F4 in VNC.
+.IP \[bu]
+While most control characters such as Ctrl+C and Ctrl+D work reliably in VNC input, a few of them (such as Ctrl+Z) do not work in certain terminal emulators, you have to toggle hold control key and then press the other character individually.
+
+.SH DESIGN RATIONALE
+.B headmore
+uses LibVNCClient (from LibVNCServer project) to connect to server in 32bit RGB colour mode, a colour space so deep helps dithering algorithm to produce smooth image; connection will still succeed even if server cannot offer 32bit colours.
+
+If the VNC server is secured by password authentication, password entry will be prompted before establishing connection, this security mechanism is also known as "VncAuth". Unfortunately the client cannot yet perform certificate based authentication, which is also known as "X509Vnc".
+
+Dithering of VNC image, terminal drawing, and keyboard interactivity are provided by libcaca (from Caca Labs). The latest image from VNC are drawn (dithered) on terminal at a constant frame rate of approximately 10FPS using Floyd-Steinberg algorithm. The terminal does not redraw in presence of keyboard input.
+
+.SH FILES
+.TP
+$HOME/.headmore.log
+Somewhat verbose messages from LibVNCClient and headmore are placed here, might come in handy for debugging connection troubles.
+
+.SH FEEDBACK
+You are most welcomed to file bug report, feature request, and questions in the project's Github page (https://github.com/HouzuoGuo/headmore), you may also direct any inquiry to the author in Email.
+
+.SH AUTHOR
+Howard Guo <guohouzuo@gmail.com>, 2016
