@@ -31,5 +31,8 @@
 # Debug files
 *.dSYM/
 *.su
+
 headmore
 *.kdev4
+*.c~
+*.h~
