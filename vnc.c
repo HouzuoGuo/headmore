@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <rfb/keysym.h>
 #include <rfb/rfb.h>
 #include <rfb/rfbclient.h>
-#include <rfb/keysym.h>
 #include <caca.h>
 #include "vnc.h"
 

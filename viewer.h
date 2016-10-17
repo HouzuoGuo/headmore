@@ -2,8 +2,8 @@
 #define VIEWER_H
 
 #include <stdbool.h>
-#include <caca.h>
 #include <sys/types.h>
+#include <caca.h>
 #include "vnc.h"
 
 #define VIEWER_PAN_STEP 0.20
@@ -26,7 +26,7 @@ struct viewer {
 	int mouse_x, mouse_y;
 	bool mouse_left, mouse_middle, mouse_right;
 
-	suseconds_t last_esc_key;
+	suseconds_t last_vnc_esc, last_viewer_esc;
 	bool void_backsp, void_tab, void_ret, void_pause, void_esc, void_del;
 	bool disp_help, input2vnc;
 	bool hold_lctrl, hold_lshift, hold_lalt, hold_lsuper, hold_ralt,
@@ -61,8 +61,8 @@ void viewer_move_mouse(struct viewer *viewer, int step_x, int step_y);
 void viewer_zoom_to_cursor(struct viewer *viewer);
 /* Translate caca key stroke to VNC key symbol and send it over VNC. */
 void viewer_input_to_vnc(struct viewer *viewer, int caca_key);
-/* Interpret and act on caca key stroke as a viewer control command. Return false only if viewer should quit. */
-bool viewer_handle_control(struct viewer *viewer, int caca_key);
+/* Interpret and act on caca key stroke as a viewer control command. */
+void viewer_handle_control(struct viewer *viewer, int caca_key);
 /* Release all resources held by the viewer, but do not terminate the VNC connection. */
 void viewer_terminate(struct viewer *viewer);
 #endif

@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <rfb/keysym.h>
@@ -19,10 +19,10 @@ static suseconds_t get_time_usec()
 static char const *viewer_help[] = {
 	"============ LEFT HAND ============",
 	"Esc   Disconnect and quit          ",
-	"wasd  Pan viewer                   ",
-	"q/e   Zoom out/in                  ",
 	"`     Toggle input to viewer/VNC   ",
 	"~     Click back-tick in VNC       ",
+	"wasd  Pan viewer                   ",
+	"q/e   Zoom out/in                  ",
 	"============ RIGHT HAND ===========",
 	"ijkl Move mouse cursor             ",
 	"u/o  Click L/R mouse button        ",
@@ -266,13 +266,19 @@ void viewer_ev_loop(struct viewer *viewer)
 		if (ev_type & CACA_EVENT_QUIT || ev_type & CACA_EVENT_NONE) {
 			return;
 		}
-		/* Handle previously banked escape key, send it to VNC. */
-		if (viewer->last_esc_key != 0
-		    && get_time_usec() - viewer->last_esc_key >=
+		/* Handle previously banked escape key (VNC input), send it to VNC. */
+		if (viewer->last_vnc_esc != 0
+		    && get_time_usec() - viewer->last_vnc_esc >=
 		    1000000 / VIEWER_FPS) {
-			viewer->last_esc_key = 0;
+			viewer->last_vnc_esc = 0;
 			viewer_vnc_click_key(viewer,
 					     cacakey2vnc(CACA_KEY_ESCAPE));
+		}
+		/* Handle previously banked escape key (viewer control), stop the viewer. */
+		if (viewer->last_viewer_esc != 0
+		    && get_time_usec() - viewer->last_viewer_esc >=
+		    1000000 / VIEWER_FPS) {
+			return;
 		}
 		/* Redraw at a constant frame rate when there is no key input */
 		if (!(ev_type & CACA_EVENT_KEY_PRESS)) {
@@ -288,9 +294,7 @@ void viewer_ev_loop(struct viewer *viewer)
 		if (viewer->input2vnc && ev_char != '`') {
 			viewer_input_to_vnc(viewer, ev_char);
 		} else {
-			if (!viewer_handle_control(viewer, ev_char)) {
-				return;
-			}
+			viewer_handle_control(viewer, ev_char);
 		}
 	}
 }
@@ -368,7 +372,7 @@ void viewer_input_to_vnc(struct viewer *viewer, int caca_key)
 	 * dealt with later.
 	 */
 	if (caca_key == CACA_KEY_ESCAPE) {
-		viewer->last_esc_key = get_time_usec();
+		viewer->last_vnc_esc = get_time_usec();
 		return;
 	}
 	/*
@@ -459,27 +463,43 @@ void viewer_input_to_vnc(struct viewer *viewer, int caca_key)
 	 * In case there was a banked escape key, the Alt combination key shall arrive
 	 * in an instant within 2000 microseconds.
 	 */
-	if (get_time_usec() - viewer->last_esc_key < 2000) {
+	if (get_time_usec() - viewer->last_vnc_esc < 2000) {
 		viewer_vnc_toggle_key(viewer, XK_Alt_L, true);
 		viewer_vnc_click_key(viewer, translated_ch);
 		viewer_vnc_toggle_key(viewer, XK_Alt_L, false);
-		viewer->last_esc_key = 0;
+		viewer->last_vnc_esc = 0;
 		return;
 	}
 	/* Finally the key code can be sent to VNC! */
 	viewer_vnc_click_key(viewer, translated_ch);
 }
 
-bool viewer_handle_control(struct viewer * viewer, int caca_key)
+void viewer_handle_control(struct viewer *viewer, int caca_key)
 {
+	/*
+	 * Similar to the case with viewer_input_to_vnc, if user accidentally types an
+	 * Alt key combination in the viewer, the first key event - an escape key will
+	 * mislead viewer into quitting.
+	 * Instead of quitting immediately, an escape key will be banked and the viewer
+	 * awaits one more key event to arrive. If it indeed arrives and within 2000
+	 * microseconds, then the user must have mistakenly typed Alt key combination,
+	 * in which case the viewer shall not quit.
+	 * If the latter key event does not arrive, the escape key must have been an
+	 * intention to quit the viewer and event loop will do that job.
+	 */
+	if (get_time_usec() - viewer->last_viewer_esc < 2000) {
+		viewer->last_viewer_esc = 0;
+	}
 	switch (caca_key) {
 	case 'h':
 	case 'H':
 		viewer->disp_help = !viewer->disp_help;
-		return true;
-		/* Left hand */
+		break;
 	case CACA_KEY_ESCAPE:
-		return false;
+		/* Escape key is banked, its meaning will be determined soon later, */
+		viewer->last_viewer_esc = get_time_usec();
+		break;
+		/* Left hand */
 	case 'w':
 	case 'W':
 		viewer_pan(viewer, 0, -1);
@@ -487,7 +507,7 @@ bool viewer_handle_control(struct viewer * viewer, int caca_key)
 	case 'a':
 	case 'A':
 		viewer_pan(viewer, -1, 0);
-		return true;
+		break;
 	case 's':
 	case 'S':
 		viewer_pan(viewer, 0, 1);
@@ -602,7 +622,6 @@ bool viewer_handle_control(struct viewer * viewer, int caca_key)
 		viewer_vnc_toggle_key(viewer, XK_Super_L, viewer->hold_lsuper);
 		break;
 	}
-	return true;
 }
 
 void viewer_terminate(struct viewer *viewer)

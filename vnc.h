@@ -1,8 +1,8 @@
 #ifndef VNC_H
 #define VNC_H
 
-#include <rfb/rfbclient.h>
 #include <stdbool.h>
+#include <rfb/rfbclient.h>
 
 #define VNC_POLL_TIMEOUT_USEC 100000	/* keep it under a second */
 #define VNC_DBG_LOG ".headmore.log"	/* name of log file under user's home directory */
