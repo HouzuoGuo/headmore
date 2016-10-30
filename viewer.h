@@ -9,7 +9,15 @@
 #define VIEWER_PAN_STEP 0.20
 #define VIEWER_ZOOM_STEP 1.20f
 #define VIEWER_ZOOM_MAX_LVL 15
-#define VIEWER_FPS 10		/* too high FPS will make control sluggish, never go above 50. */
+#define VIEWER_ZOOM_CURSOR_LVL 9	/* zoom level for when zooming into mouse cursor */
+
+/*
+ * The viewer will render frame-buffer content at roughly this many frames per second.
+ * It does not take rendering algorithm itself into account, hence the value is a rough estimate at best.
+ * The perceived FPS decreases as terminal gets larger.
+ * Do not raise the value too high or controls will become very sluggish.
+ */
+#define VIEWER_FPS 10
 
 /* Draw remote frame-buffer and handle key/mouse IO. */
 struct viewer {

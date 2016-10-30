@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <rfb/rfbclient.h>
 
-#define VNC_POLL_TIMEOUT_USEC 100000	/* keep it under a second */
+#define VNC_POLL_TIMEOUT_USEC 100000	/* A lower value enables faster termination of VNC IO loop */
 
 /* Connect to remote frame-buffer and handle control/image IO. */
 struct vnc {

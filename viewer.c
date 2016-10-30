@@ -172,8 +172,8 @@ void viewer_zoom(struct viewer *viewer, int offset)
 	viewer->zoom_x =
 	    (viewer->zoom_lvl <
 	     0) ? 1.0 /
-	    viewer->zoom_lvls[-viewer->zoom_lvl] : viewer->
-	    zoom_lvls[viewer->zoom_lvl];
+	    viewer->zoom_lvls[-viewer->zoom_lvl] : viewer->zoom_lvls[viewer->
+								     zoom_lvl];
 	viewer->zoom_y =
 	    viewer->zoom_x * viewer_width / viewer_height *
 	    rfb(viewer)->height / rfb(viewer)->width * viewer_height /
@@ -215,7 +215,6 @@ void viewer_pan(struct viewer *viewer, int pan_x, int pan_y)
 
 void viewer_redraw(struct viewer *viewer)
 {
-	caca_set_color_ansi(viewer->view, CACA_WHITE, CACA_BLACK);
 	caca_clear_canvas(viewer->view);
 	/*
 	 * Run the latest frame-buffer content through Floyd–Steinberg algorithm -
@@ -225,27 +224,24 @@ void viewer_redraw(struct viewer *viewer)
 	if (viewer->fb_dither != NULL) {
 		caca_free_dither(viewer->fb_dither);
 	}
+	float vnc_width = rfb(viewer)->width;
+	float vnc_height = rfb(viewer)->height;
 	viewer->fb_dither =
-	    caca_create_dither(32, rfb(viewer)->width,
-			       rfb(viewer)->height,
-			       rfb(viewer)->width * 4, 0x000000ff,
-			       0x0000ff00, 0x00ff0000, 0);
+	    caca_create_dither(32, vnc_width, vnc_height, vnc_width * 4,
+			       0x000000ff, 0x0000ff00, 0x00ff0000, 0);
 	caca_set_dither_algorithm(viewer->fb_dither, "fstein");
 	caca_set_dither_gamma(viewer->fb_dither, 1.0);
 	int viewer_width = caca_get_canvas_width(viewer->view);
 	int viewer_height = caca_get_canvas_height(viewer->view);
 	float delta_x = (viewer->zoom_x > 1.0) ? viewer->view_x : 0.5;
 	float delta_y = (viewer->zoom_y > 1.0) ? viewer->view_y : 0.5;
-
-	/* Draw frame-buffer and other things on the canvas */
 	caca_dither_bitmap(viewer->view,
-			   viewer_width * (1.0 -
-					   viewer->zoom_x) * delta_x,
-			   viewer_height * (1.0 -
-					    viewer->zoom_y) * delta_y,
+			   viewer_width * (1.0 - viewer->zoom_x) * delta_x,
+			   viewer_height * (1.0 - viewer->zoom_y) * delta_y,
 			   viewer_width * viewer->zoom_x + 1,
 			   viewer_height * viewer->zoom_y + 1,
 			   viewer->fb_dither, rfb(viewer)->frameBuffer);
+	/* Draw status and help */
 	viewer_disp_status(viewer);
 	if (viewer->disp_help) {
 		viewer_disp_help(viewer);
@@ -348,7 +344,7 @@ void viewer_move_mouse(struct viewer *viewer, int step_x, int step_y)
 void viewer_zoom_to_cursor(struct viewer *viewer)
 {
 	/* Zoom in to approximately 67% of maximum zoom level */
-	viewer_zoom(viewer, VIEWER_ZOOM_MAX_LVL * 2 / 3 - viewer->zoom_lvl);
+	viewer_zoom(viewer, VIEWER_ZOOM_CURSOR_LVL - viewer->zoom_lvl);
 	/* Calculate position of mouse cursor relative to the entire canvas */
 	viewer->view_x = (float)viewer->mouse_x / (float)rfb(viewer)->width;
 	viewer->view_y = (float)viewer->mouse_y / (float)rfb(viewer)->height;
