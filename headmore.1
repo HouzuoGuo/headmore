@@ -19,10 +19,6 @@ offers comprehensive keyboard and mouse input controls. The back-tick key switch
 For QWERTY keyboard users, the left hand side controls are:
 
 .TP
-.B Escape
-Disconnect from VNC server and leave the viewer immediately.
-.
-.TP
 .B Back-tick (`)
 Switch keyboard input between viewer/mouse control and VNC desktop. When you have just connected, your keyboard input is directed at viewer/mouse control.
 .
@@ -42,6 +38,10 @@ Zoom out or in on the viewer.
 .P
 And the right hand side controls are:
 
+.TP
+.B F10
+Disconnect from VNC server and leave the viewer immediately.
+.
 .TP
 .B I, J, K, L
 Move mouse cursor up, left, down, or right. Cursor speed is determined by current zoom, it move slower when zoomed in.
@@ -85,14 +85,20 @@ Toggle hold left Meta key (Mac/Windows key).
 
 .SH INPUT QUIRKS
 
-While nearly all keyboard input will be successfully sent to VNC desktop, there are however several quirks to bear in mind:
+While nearly all keyboard input will be successfully sent to VNC desktop, bear in mind several quirks caused by limitations of character terminal, universal to all terminal emulators:
 
 .IP \[bu]
-If you have a computer mouse and your terminal emulator somehow forwards mouse clicks to headmore, headmore may do random things or quit unexpectedly.
+If you have a computer mouse and your terminal forwards mouse input headmore, headmore may react with random key input or quit unexpectedly.
 .IP \[bu]
-All modifier keys only work with lower case letters a-z. For other combinations such as Alt+F4, toggle hold Alt key and then type F4 in VNC.
+Meta key combinations such as Meta+D cannot be directly typed into VNC, you have to toggle hold Meta key and then type the modified key.
 .IP \[bu]
-While most control characters such as Ctrl+C and Ctrl+D work reliably in VNC input, a few of them (such as Ctrl+Z) do not work in certain terminal emulators, you have to toggle hold control key and then press the other character individually.
+Other modifier keys (Control and Alt) only work with lower case letters a-z. For other combinations such as Alt+F4 or Ctrl+Shift+A, toggle hold the modifier key and then press the modified key.
+.IP \[bu]
+Rapid input of Alt key combinations may occasionally result in the modified being typed without Alt modifier. Type Alt key combinations slowly to avoid encountering this issue.
+.IP \[bu]
+Typing escape key and another key in short succession may result in an Alt combination being typed unexpectedly. Wait a short while after the escape key to avoid encountering this issue.
+.IP \[bu]
+While most control characters such as Ctrl+C and Ctrl+D work reliably in VNC input, a few of them (such as Ctrl+Z) do not work in certain terminal emulators, in such cases you have to toggle hold Ctrl and then press the letter key.
 
 .SH DESIGN RATIONALE
 .B headmore
