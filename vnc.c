@@ -1,8 +1,6 @@
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <rfb/keysym.h>
@@ -10,26 +8,6 @@
 #include <rfb/rfbclient.h>
 #include <caca.h>
 #include "vnc.h"
-
-static FILE *vnc_dbg_log = NULL;	/* direct VNC library log to a tmp file */
-
-/* Write a log line into log file. */
-static void vnc_log2file(const char *format, ...)
-{
-	if (!rfbEnableClientLogging || vnc_dbg_log == NULL) {
-		return;
-	}
-	time_t now;
-	time(&now);
-	char timestamp[100];
-	strftime(timestamp, 100 - 1, "%Y-%m-%d %X ", localtime(&now));
-	fprintf(vnc_dbg_log, "%s", timestamp);
-	va_list args;
-	va_start(args, format);
-	vfprintf(vnc_dbg_log, format, args);
-	va_end(args);
-	fflush(vnc_dbg_log);
-}
 
 /* Process RFB server messages, block caller. Return NULL. */
 static void *io_loop_fun(void *struct_vnc)
@@ -53,26 +31,6 @@ static void *io_loop_fun(void *struct_vnc)
 bool vnc_init(struct vnc * vnc, int argc, char **argv)
 {
 	memset(vnc, 0, sizeof(struct vnc));
-	/* A debug log file is created under user's home directory */
-	char *home_dir_path = getenv("HOME");
-	if (home_dir_path != NULL) {
-		char *log_file_path =
-		    (char *)calloc(strlen(home_dir_path) + strlen(VNC_DBG_LOG) +
-				   2, sizeof(char));
-		if (!log_file_path) {
-			fprintf(stderr, "Out of memory");
-			return false;
-		}
-		strcat(log_file_path, home_dir_path);
-		strcat(log_file_path, "/");
-		strcat(log_file_path, VNC_DBG_LOG);
-		printf("Log file is located at %s\n", log_file_path);
-		vnc_dbg_log = fopen(log_file_path, "a");
-		free(log_file_path);
-	}
-	/* libvncserver shares logging functions across all connections */
-	rfbClientLog = vnc_log2file;
-	rfbClientErr = vnc_log2file;
 	/*
 	 * The connection asks server for 32-bit RGB colours.
 	 * Take note that VNC does not use alpha channel, hence the most significant 2 bytes are useless.
@@ -81,11 +39,9 @@ bool vnc_init(struct vnc * vnc, int argc, char **argv)
 	 */
 	vnc->conn = rfbGetClient(8, 3, 4);
 	vnc->conn->canHandleNewFBSize = FALSE;
-	printf("Establishing VNC connection...\n");
 	if (!rfbInitClient(vnc->conn, &argc, argv)) {
 		return false;
 	}
-	printf("Connection is successfully established!\n");
 	vnc->cont_io_loop = true;
 	vnc->connected = true;
 	if (pthread_create(&vnc->io_loop, NULL, io_loop_fun, (void *)vnc) != 0) {
