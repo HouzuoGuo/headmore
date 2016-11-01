@@ -28,38 +28,38 @@ static void *io_loop_fun(void *struct_vnc)
 	return NULL;
 }
 
-bool vnc_init(struct vnc * vnc, int argc, char **argv)
+bool vnc_init(struct vnc * v, int argc, char **argv)
 {
-	memset(vnc, 0, sizeof(struct vnc));
+	memset(v, 0, sizeof(struct vnc));
 	/*
 	 * The connection asks server for 32-bit RGB colours.
 	 * Take note that VNC does not use alpha channel, hence the most significant 2 bytes are useless.
 	 * I think 256-colours should be more than sufficient for this VNC client, but somehow I could not
 	 * get a sufficiently good quality out of dithering process, perhaps I got the bit-masks wrong?
 	 */
-	vnc->conn = rfbGetClient(8, 3, 4);
-	vnc->conn->canHandleNewFBSize = FALSE;
-	if (!rfbInitClient(vnc->conn, &argc, argv)) {
+	v->conn = rfbGetClient(8, 3, 4);
+	v->conn->canHandleNewFBSize = FALSE;
+	if (!rfbInitClient(v->conn, &argc, argv)) {
 		return false;
 	}
-	vnc->cont_io_loop = true;
-	vnc->connected = true;
-	if (pthread_create(&vnc->io_loop, NULL, io_loop_fun, (void *)vnc) != 0) {
+	v->cont_io_loop = true;
+	v->connected = true;
+	if (pthread_create(&v->io_loop, NULL, io_loop_fun, (void *)v) != 0) {
 		fprintf(stderr, "Failed to create message loop thread\n");
 		return false;
 	}
 	return true;
 }
 
-void vnc_destroy(struct vnc *vnc)
+void vnc_destroy(struct vnc *v)
 {
-	vnc->cont_io_loop = false;
-	vnc->connected = false;
-	if (pthread_join(vnc->io_loop, NULL) != 0) {
+	v->cont_io_loop = false;
+	v->connected = false;
+	if (pthread_join(v->io_loop, NULL) != 0) {
 		fprintf(stderr, "Failed to join message loop thread\n");
 	}
-	uint8_t *fb = vnc->conn->frameBuffer;
-	rfbClientCleanup(vnc->conn);
+	uint8_t *fb = v->conn->frameBuffer;
+	rfbClientCleanup(v->conn);
 	free(fb);
 	rfbClientLog("VNC connection has been terminated\n");
 }

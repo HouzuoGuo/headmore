@@ -14,9 +14,9 @@ struct vnc {
 };
 
 /* Connect to server and immediately begin message loop in a separate thread. Return false only on failure. */
-bool vnc_init(struct vnc *vnc, int argc, char **argv);
+bool vnc_init(struct vnc *v, int argc, char **argv);
 /* Close VNC connection and free all resources, including the VNC client itself. */
-void vnc_destroy(struct vnc *vnc);
+void vnc_destroy(struct vnc *v);
 /* Translate a key code as read by libcaca to its corresponding VNC key code. Return -1 only if no translation. */
 int cacakey2vnc(int keych);
 
