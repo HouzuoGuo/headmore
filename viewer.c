@@ -188,12 +188,13 @@ void viewer_redraw(struct viewer *v)
 
 void viewer_ev_loop(struct viewer *v)
 {
-	int accepted_ev =
+	int ev_accept =
 	    CACA_EVENT_KEY_PRESS | CACA_EVENT_RESIZE | CACA_EVENT_QUIT;
 	while (true) {
 		/* Listen to the latest event */
 		caca_event_t ev;
-		caca_get_event(v->disp, accepted_ev, &ev, 1000000 / VIEWER_FPS);
+		caca_get_event(v->disp, ev_accept, &ev,
+			       VIEWER_FRAME_INTVL_USEC);
 		/* Certain types of events are caca calling quit */
 		enum caca_event_type ev_type = caca_get_event_type(&ev);
 		if (ev_type & CACA_EVENT_QUIT || ev_type & CACA_EVENT_NONE) {
@@ -202,7 +203,7 @@ void viewer_ev_loop(struct viewer *v)
 		/* Handle previously banked escape key (VNC input), send it to VNC. */
 		if (v->last_vnc_esc != 0
 		    && get_time_usec() - v->last_vnc_esc >=
-		    1000000 / VIEWER_FPS) {
+		    VIEWER_FRAME_INTVL_USEC) {
 			v->last_vnc_esc = 0;
 			viewer_vnc_click_key(v, cacakey2vnc(CACA_KEY_ESCAPE));
 		}
@@ -356,10 +357,14 @@ void viewer_input_to_vnc(struct viewer *v, int caca_key)
 		return;
 	}
 	/*
-	 * In case there was a banked escape key, the Alt combination key shall arrive
-	 * pretty soon, definitely before the next canvas refresh.
+	 * In case there was a banked escape key, the Alt combination key shall
+	 * arrive pretty soon, and most definitely before the next frame refresh.
+	 * Occasionally it takes even longer to arrive but there is no way to
+	 * work around it.
 	 */
-	if (get_time_usec() - v->last_vnc_esc < VIEWER_FPS * 1000) {
+	suseconds_t elapsed = get_time_usec() - v->last_vnc_esc;
+	if (elapsed < VIEWER_FRAME_INTVL_USEC
+	    && elapsed < VIEWER_MAX_INPUT_INTVL_USEC) {
 		viewer_vnc_toggle_key(v, XK_Alt_L, true);
 		viewer_vnc_click_key(v, translated_ch);
 		viewer_vnc_toggle_key(v, XK_Alt_L, false);
@@ -372,6 +377,17 @@ void viewer_input_to_vnc(struct viewer *v, int caca_key)
 
 bool viewer_handle_control(struct viewer * v, int caca_key)
 {
+	/*
+	 * When the canvas is too busy panning/zooming, causing very low FPS,
+	 * the terminal occasionally generates repeatitive key input seemingly
+	 * out of nowhere, in very short successions. To work around it, this
+	 * condition caps number of viewe controls to approximately 10 per second.
+	 */
+	suseconds_t elapsed = get_time_usec() - v->last_vnc_esc;
+	if (v->last_viewer_control != 0
+	    && elapsed < VIEWER_MAX_INPUT_INTVL_USEC) {
+		return;
+	}
 	/*
 	 * In order to avoid redrawing too rapidly, only viewer zoom/pan
 	 * actions redraw immediately.
@@ -518,6 +534,7 @@ bool viewer_handle_control(struct viewer * v, int caca_key)
 		viewer_vnc_toggle_key(v, XK_Super_L, v->hold_lsuper);
 		break;
 	}
+	v->last_viewer_control = get_time_usec();
 	return true;
 }
 

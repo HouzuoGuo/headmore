@@ -14,6 +14,8 @@
  * Do not raise the value too high or controls will become very sluggish.
  */
 #define VIEWER_FPS 10
+#define VIEWER_FRAME_INTVL_USEC (1000000 / VIEWER_FPS)
+#define VIEWER_MAX_INPUT_INTVL_USEC (1000000 / VIEWER_FPS)
 
 /* Render remote frame-buffer on terminal and handle key/mouse IO. */
 struct viewer {
@@ -24,7 +26,7 @@ struct viewer {
 	caca_canvas_t *view;
 	struct caca_dither *fb_dither;
 
-	suseconds_t last_vnc_esc;
+	suseconds_t last_vnc_esc, last_viewer_control;
 	bool void_backsp, void_tab, void_ret, void_pause, void_esc, void_del;
 	bool disp_help, input2vnc;
 	bool hold_lctrl, hold_lshift, hold_lalt, hold_lsuper, hold_ralt,
