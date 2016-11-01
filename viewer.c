@@ -174,7 +174,7 @@ void viewer_redraw(struct viewer *v)
 	 * right there.
 	 */
 	if (geo_dither_numch_x(&params, 12) < 5) {
-		caca_set_color_ansi(v->view, CACA_WHITE, CACA_BLUE);
+		caca_set_color_ansi(v->view, CACA_WHITE, CACA_RED);
 		int ch_x = geo_dither_ch_px_x(&params, v->geo.mouse_x);
 		int ch_y = geo_dither_ch_px_y(&params, v->geo.mouse_y);
 		caca_fill_box(v->view, ch_x - 1, ch_y - 1, 3, 3, '*');
