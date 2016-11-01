@@ -167,7 +167,18 @@ void viewer_redraw(struct viewer *v)
 	    geo_get_dither_params(&v->geo, viewer_geo(v));
 	caca_dither_bitmap(v->view, params.x, params.y, params.width,
 			   params.height, v->fb_dither, rfb(v)->frameBuffer);
-	/* Draw status and help */
+	/*
+	 * Mouse cursors are usually wider than 14 pixels. If it will not take
+	 * more than 5 characters to draw the cusor, then consider it very
+	 * difficult to spot on the VNC canvas, and draw an easy to spot block
+	 * right there.
+	 */
+	if (geo_dither_numch_x(&params, 12) < 5) {
+		caca_set_color_ansi(v->view, CACA_WHITE, CACA_BLUE);
+		int ch_x = geo_dither_ch_px_x(&params, v->geo.mouse_x);
+		int ch_y = geo_dither_ch_px_y(&params, v->geo.mouse_y);
+		caca_fill_box(v->view, ch_x - 1, ch_y - 1, 3, 3, '*');
+	}
 	viewer_disp_status(v);
 	if (v->disp_help) {
 		viewer_disp_help(v);

@@ -5,10 +5,10 @@ struct geo_facts geo_facts_of(struct vnc *vnc, caca_display_t * disp,
 			      caca_canvas_t * view)
 {
 	struct geo_facts ret;
-	ret.disp_width = caca_get_display_width(disp);
-	ret.disp_height = caca_get_display_height(disp);
-	ret.term_width = caca_get_canvas_width(view);
-	ret.term_height = caca_get_canvas_height(view);
+	ret.px_width = caca_get_display_width(disp);
+	ret.px_height = caca_get_display_height(disp);
+	ret.ch_width = caca_get_canvas_width(view);
+	ret.ch_height = caca_get_canvas_height(view);
 	ret.vnc_width = vnc->conn->width;
 	ret.vnc_height = vnc->conn->height;
 	return ret;
@@ -55,9 +55,9 @@ void geo_zoom(struct geo *g, struct geo_facts facts, int offset)
 	    (g->zoom <
 	     0) ? 1.0 / g->zoom_lvls[-g->zoom] : g->zoom_lvls[g->zoom];
 	g->zoom_y =
-	    g->zoom_x * facts.term_width / facts.term_height *
-	    facts.vnc_height / facts.vnc_width * facts.term_height /
-	    facts.term_width * facts.disp_width / facts.disp_height;
+	    g->zoom_x * facts.ch_width / facts.ch_height *
+	    facts.vnc_height / facts.vnc_width * facts.ch_height /
+	    facts.ch_width * facts.px_width / facts.px_height;
 
 	if (g->zoom_y > g->zoom_x) {
 		float tmp = g->zoom_x;
@@ -120,12 +120,31 @@ void geo_zoom_to_cursor(struct geo *g, struct geo_facts facts)
 struct geo_dither_params geo_get_dither_params(struct geo *g,
 					       struct geo_facts facts)
 {
+	struct geo_dither_params ret;
+	ret.facts = facts;
 	float delta_x = (g->zoom_x > 1.0) ? g->view_x : 0.5;
 	float delta_y = (g->zoom_y > 1.0) ? g->view_y : 0.5;
-	struct geo_dither_params ret;
-	ret.x = facts.term_width * (1.0 - g->zoom_x) * delta_x;
-	ret.y = facts.term_height * (1.0 - g->zoom_y) * delta_y;
-	ret.width = facts.term_width * g->zoom_x + 1;
-	ret.height = facts.term_height * g->zoom_y + 1;
+	ret.x = facts.ch_width * (1.0 - g->zoom_x) * delta_x;
+	ret.y = facts.ch_height * (1.0 - g->zoom_y) * delta_y;
+	ret.width = facts.ch_width * g->zoom_x + 1;
+	ret.height = facts.ch_height * g->zoom_y + 1;
 	return ret;
+}
+
+int geo_dither_ch_px_x(struct geo_dither_params *params, int px_x)
+{
+	float dx = (float)px_x / params->facts.vnc_width;
+	return dx * params->width + params->x;
+}
+
+int geo_dither_ch_px_y(struct geo_dither_params *params, int px_y)
+{
+	float dy = (float)px_y / params->facts.vnc_height;
+	return dy * params->height + params->y;
+}
+
+int geo_dither_numch_x(struct geo_dither_params *params, int num_pixels_x)
+{
+	return geo_dither_ch_px_x(params,
+				  num_pixels_x) - geo_dither_ch_px_x(params, 0);
 }

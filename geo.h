@@ -7,12 +7,12 @@
 #define GEO_PAN_STEP 0.20
 #define GEO_ZOOM_STEP 1.20f
 #define GEO_ZOOM_MAX_LVL 15
-#define GEO_ZOOM_CURSOR_LVL 9	/* zoom level for when zooming into mouse cursor */
+#define GEO_ZOOM_CURSOR_LVL 11	/* zoom level for zooming into mouse cursor */
 
 /* Geometry facts of terminal emulator and VNC connection. */
 struct geo_facts {
-	int disp_width, disp_height;
-	int term_width, term_height;
+	int px_width, px_height;
+	int ch_width, ch_height;
 	int vnc_width, vnc_height;
 };
 
@@ -44,10 +44,17 @@ void geo_zoom_to_cursor(struct geo *g, struct geo_facts facts);
 
 /* Calculated parameters for dithering algorithm. */
 struct geo_dither_params {
+	struct geo_facts facts;
 	int x, y, width, height;
 };
 /* Calculate and return input parameters for dithering algorithm. */
 struct geo_dither_params geo_get_dither_params(struct geo *g,
 					       struct geo_facts facts);
+/* Return the the character location of the VNC pixel on X axis. */
+int geo_dither_ch_px_x(struct geo_dither_params *params, int px_x);
+/* Return the the character location of the VNC pixel on Y axis. */
+int geo_dither_ch_px_y(struct geo_dither_params *params, int px_y);
+/* Return (approx.) number of characters it would take to draw those pixels on X axis. */
+int geo_dither_numch_x(struct geo_dither_params *params, int num_pixels_x);
 
 #endif
