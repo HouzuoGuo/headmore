@@ -386,7 +386,7 @@ bool viewer_handle_control(struct viewer * v, int caca_key)
 	suseconds_t elapsed = get_time_usec() - v->last_viewer_control;
 	if (v->last_viewer_control != 0
 	    && elapsed < VIEWER_MAX_INPUT_INTVL_USEC) {
-		return;
+		return true;
 	}
 	/*
 	 * In order to avoid redrawing too rapidly, only viewer zoom/pan
@@ -540,9 +540,13 @@ bool viewer_handle_control(struct viewer * v, int caca_key)
 
 void viewer_terminate(struct viewer *v)
 {
-	caca_free_display(v->disp);
-	caca_free_canvas(v->view);
 	if (v->fb_dither != NULL) {
 		caca_free_dither(v->fb_dither);
+	}
+	if (v->disp != NULL) {
+		caca_free_display(v->disp);
+	}
+	if (v->view != NULL) {
+		caca_free_canvas(v->view);
 	}
 }
