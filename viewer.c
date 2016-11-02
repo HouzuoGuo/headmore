@@ -383,7 +383,7 @@ bool viewer_handle_control(struct viewer * v, int caca_key)
 	 * out of nowhere, in very short successions. To work around it, this
 	 * condition caps number of viewe controls to approximately 10 per second.
 	 */
-	suseconds_t elapsed = get_time_usec() - v->last_vnc_esc;
+	suseconds_t elapsed = get_time_usec() - v->last_viewer_control;
 	if (v->last_viewer_control != 0
 	    && elapsed < VIEWER_MAX_INPUT_INTVL_USEC) {
 		return;
