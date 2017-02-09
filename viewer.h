@@ -31,6 +31,7 @@ struct viewer {
 	bool disp_help, input2vnc;
 	bool hold_lctrl, hold_lshift, hold_lalt, hold_lsuper, hold_ralt,
 	    hold_rshift, hold_rctrl;
+	bool draw_mouse_pointer;
 	bool mouse_left, mouse_middle, mouse_right;
 };
 

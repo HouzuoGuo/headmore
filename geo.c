@@ -1,8 +1,8 @@
 #include <string.h>
 #include "geo.h"
 
-struct geo_facts geo_facts_of(struct vnc *vnc, caca_display_t * disp,
-			      caca_canvas_t * view)
+struct geo_facts
+geo_facts_of(struct vnc *vnc, caca_display_t * disp, caca_canvas_t * view)
 {
 	struct geo_facts ret;
 	ret.px_width = caca_get_display_width(disp);
@@ -55,9 +55,9 @@ void geo_zoom(struct geo *g, struct geo_facts facts, int offset)
 	    (g->zoom <
 	     0) ? 1.0 / g->zoom_lvls[-g->zoom] : g->zoom_lvls[g->zoom];
 	g->zoom_y =
-	    g->zoom_x * facts.ch_width / facts.ch_height *
-	    facts.vnc_height / facts.vnc_width * facts.ch_height /
-	    facts.ch_width * facts.px_width / facts.px_height;
+	    g->zoom_x * facts.ch_width / facts.ch_height * facts.vnc_height /
+	    facts.vnc_width * facts.ch_height / facts.ch_width *
+	    facts.px_width / facts.px_height;
 
 	if (g->zoom_y > g->zoom_x) {
 		float tmp = g->zoom_x;
@@ -90,8 +90,8 @@ void geo_pan(struct geo *g, int pan_x, int pan_y)
 	}
 }
 
-void geo_move_mouse(struct geo *g, struct geo_facts facts, int step_x,
-		    int step_y)
+void
+geo_move_mouse(struct geo *g, struct geo_facts facts, int step_x, int step_y)
 {
 	int speed = g->mouse_speed[g->zoom];
 	g->mouse_x += step_x * speed;
@@ -117,8 +117,8 @@ void geo_zoom_to_cursor(struct geo *g, struct geo_facts facts)
 	g->view_y = (float)g->mouse_y / (float)facts.vnc_height;
 }
 
-struct geo_dither_params geo_get_dither_params(struct geo *g,
-					       struct geo_facts facts)
+struct geo_dither_params
+geo_get_dither_params(struct geo *g, struct geo_facts facts)
 {
 	struct geo_dither_params ret;
 	ret.facts = facts;

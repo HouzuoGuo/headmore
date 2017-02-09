@@ -32,7 +32,7 @@ In general, the left hand side keys pan and zoom viewer, the right hand side key
 You are most welcomed to contribute code and file bug report, feature request, and questions in the project's [issues page](https://github.com/HouzuoGuo/headmore/issues), you may also direct any inquiry to the author in [Email](mailto:guohouzuo@gmail.com).
 
 ## License
-Copyright (c) 2016 Howard Guo <guohouzuo@gmail.com>
+Copyright (c) 2017 Howard Guo <guohouzuo@gmail.com>
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 

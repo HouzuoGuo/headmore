@@ -22,6 +22,7 @@ static char const *viewer_help[] = {
 	"~     Click back-tick in VNC       ",
 	"wasd  Pan viewer                   ",
 	"q/e   Zoom out/in                  ",
+	"Space Toggle display mouse pointer ",
 	"============ RIGHT HAND ===========",
 	"F10  Quit                          ",
 	"ijkl Move mouse cursor             ",
@@ -45,6 +46,7 @@ static struct _rfbClient *rfb(struct viewer *v)
 
 bool viewer_init(struct viewer * v, struct vnc * vnc)
 {
+	/* All bool switches are off by default */
 	memset(v, 0, sizeof(struct viewer));
 	/* Initialise visuals */
 	v->view = caca_create_canvas(0, 0);
@@ -170,14 +172,19 @@ void viewer_redraw(struct viewer *v)
 	/*
 	 * Mouse cursors are usually wider than 14 pixels. If it will not take
 	 * more than 5 characters to draw the cusor, then consider it very
-	 * difficult to spot on the VNC canvas, and draw an easy to spot block
-	 * right there.
+	 * difficult to spot on the VNC canvas, and draw a red block right there.
 	 */
+	int mouse_ch_x = geo_dither_ch_px_x(&params, v->geo.mouse_x);
+	int mouse_ch_y = geo_dither_ch_px_y(&params, v->geo.mouse_y);
 	if (geo_dither_numch_x(&params, 12) < 5) {
 		caca_set_color_ansi(v->view, CACA_WHITE, CACA_RED);
-		int ch_x = geo_dither_ch_px_x(&params, v->geo.mouse_x);
-		int ch_y = geo_dither_ch_px_y(&params, v->geo.mouse_y);
-		caca_fill_box(v->view, ch_x - 1, ch_y - 1, 3, 3, '*');
+		caca_fill_box(v->view, mouse_ch_x - 1, mouse_ch_y - 1, 3, 3,
+			      '*');
+	}
+	/* Draw local mouse pointer */
+	if (v->draw_mouse_pointer) {
+		caca_set_color_ansi(v->view, CACA_WHITE, CACA_RED);
+		caca_put_char(v->view, mouse_ch_x, mouse_ch_y, '*');
 	}
 	viewer_disp_status(v);
 	if (v->disp_help) {
@@ -439,6 +446,9 @@ bool viewer_handle_control(struct viewer * v, int caca_key)
 	case '~':
 		/* Click back-tick (96 in ASCII) in VNC */
 		viewer_vnc_click_key(v, 96);
+		break;
+	case ' ':
+		v->draw_mouse_pointer = !v->draw_mouse_pointer;
 		break;
 		/* Right hand */
 	case 'i':
