@@ -2,8 +2,8 @@
 A fully functional VNC client for your geeky character terminals (Linux VT, xterm, and more).
 
 ## Screenshots
-![screenshot 1](https://raw.githubusercontent.com/HouzuoGuo/headmore/master/demo1.jpg)
-![screenshot 2](https://raw.githubusercontent.com/HouzuoGuo/headmore/master/demo2.jpg)
+![screenshot 1](https://raw.githubusercontent.com/HouzuoGuo/headmore/master/marketing/demo1.jpg)
+![screenshot 2](https://raw.githubusercontent.com/HouzuoGuo/headmore/master/marketing/demo2.jpg)
 
 ## Compile and Run
 `headmore` requires the following components to compile and run:
